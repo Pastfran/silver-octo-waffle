@@ -1,7 +1,9 @@
 nextflow.enable.dsl = 2
 
-params.accession = "M21012"
+//params.accession = null; nicht nötig, weil unten schon default im if workflow vergeben
+
 params.store = "${launchDir}/store"
+params.url =  "https://gitlab.com/dabrowskiw/cq-examples/-/raw/master/data/hepatitis_combined.fasta?inline=false"
 
 process downloadReference {
 	storeDir params.store
@@ -21,17 +23,28 @@ process downloadSample {
 		path "sample.fasta"
 	script: 
 	"""
-	wget "https://gitlab.com/dabrowskiw/cq-examples/-/raw/master/data/hepatitis_combined.fasta?inline=false" -O sample.fasta
+	wget ${params.url} -O sample.fasta
+	"""
+}
+
+process combineFile {
+	storeDir params.store
+	input: 
+		path infiles
+	output: 
+		path "combined.fasta" 
+	script: 
+	"""
+	cat *.fasta > combined.fasta
 	"""
 }
 
 workflow {
-//if (!params.reference) {params.accession = "M21012" 
-//	print("Default accessionnumber M21012 is used.")}
-// else ()
+if (!params.accession) {params.accession = 'M21012' 
+	print("Default accessionnumber M21012 is used.")}
 a = downloadReference(Channel.from(params.accession)) 
-
-
 b = downloadSample()
-
+c = a.concat(b)
+d = c.collect()
+combineFile(d)
 }
