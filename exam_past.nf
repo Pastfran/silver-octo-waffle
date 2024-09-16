@@ -1,5 +1,5 @@
 nextflow.enable.dsl = 2
-
+// export NXF_SINGULARITY_HOME_MOUNT=true vorher laufen lassen! 
 //params.accession = null; nicht nötig, weil unten schon default im if workflow vergeben
 
 params.store = "${launchDir}/store"
@@ -39,6 +39,18 @@ process combineFile {
 	"""
 }
 
+process sequenceAlign {
+	storeDir params.store
+	container "https://depot.galaxyproject.org/singularity/mafft%3A7.520--hec16e2b_1"
+	input: 
+		path infile 
+	output: 
+		path "alignment.fasta"
+	script: 
+	"""
+	mafft $infile > alignment.fasta
+	"""
+}
 workflow {
 if (!params.accession) {params.accession = 'M21012' 
 	print("Default accessionnumber M21012 is used.")}
@@ -46,5 +58,7 @@ a = downloadReference(Channel.from(params.accession))
 b = downloadSample()
 c = a.concat(b)
 d = c.collect()
-combineFile(d)
+e = combineFile(d)
+
+sequenceAlign(e)
 }
