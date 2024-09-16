@@ -51,14 +51,29 @@ process sequenceAlign {
 	mafft $infile > alignment.fasta
 	"""
 }
+
+process sequenceClean {
+	publishDir params.out, mode: "copy", overwrite: true 
+	container "https://depot.galaxyproject.org/singularity/trimal%3A1.5.0--h4ac6f70_1"
+	input:
+		path infileclean 
+	output: 
+		path "${infileclean.getSimpleName()}_out.html"
+	script: 
+	"""
+	 trimal -in $infileclean -htmlout ${infileclean.getSimpleName()}_out.html -automated1
+	"""
+		
+}
 workflow {
 if (!params.accession) {params.accession = 'M21012' 
 	print("Default accessionnumber M21012 is used.")}
+
 a = downloadReference(Channel.from(params.accession)) 
 b = downloadSample()
 c = a.concat(b)
 d = c.collect()
 e = combineFile(d)
-
-sequenceAlign(e)
+f = sequenceAlign(e)
+g = sequenceClean(f)
 }
