@@ -4,7 +4,7 @@ nextflow.enable.dsl = 2
 
 params.store = "${launchDir}/store"
 params.url =  "https://gitlab.com/dabrowskiw/cq-examples/-/raw/master/data/hepatitis_combined.fasta?inline=false"
-
+params.out = "${launchDir}/output"
 process downloadReference {
 	storeDir params.store
 	input:
@@ -59,9 +59,10 @@ process sequenceClean {
 		path infileclean 
 	output: 
 		path "${infileclean.getSimpleName()}_out.html"
+		path "${infileclean.getSimpleName()}_out.fasta"
 	script: 
 	"""
-	 trimal -in $infileclean -htmlout ${infileclean.getSimpleName()}_out.html -automated1
+	 trimal -in $infileclean -out ${infileclean.getSimpleName()}_out.fasta -htmlout ${infileclean.getSimpleName()}_out.html -automated1
 	"""
 		
 }
