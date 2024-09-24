@@ -5,6 +5,7 @@ nextflow.enable.dsl = 2
 params.store = "${launchDir}/store"
 params.url =  "https://gitlab.com/dabrowskiw/cq-examples/-/raw/master/data/hepatitis_combined.fasta?inline=false"
 params.out = "${launchDir}/output"
+
 process downloadReference {
 	storeDir params.store
 	input:
@@ -32,10 +33,10 @@ process combineFile {
 	input: 
 		path infiles
 	output: 
-		path "combined.fasta" 
+		path "${params.accession}_combined.fasta" 
 	script: 
 	"""
-	cat *.fasta > combined.fasta
+	cat *.fasta > ${params.accession}_combined.fasta
 	"""
 }
 
@@ -45,10 +46,10 @@ process sequenceAlign {
 	input: 
 		path infile 
 	output: 
-		path "alignment.fasta"
+		path "${infile.getSimpleName()}_alignment.fasta"
 	script: 
 	"""
-	mafft $infile > alignment.fasta
+	mafft $infile > ${infile.getSimpleName()}_alignment.fasta
 	"""
 }
 
@@ -64,7 +65,6 @@ process sequenceClean {
 	"""
 	 trimal -in $infileclean -out ${infileclean.getSimpleName()}_out.fasta -htmlout ${infileclean.getSimpleName()}_out.html -automated1
 	"""
-		
 }
 workflow {
 if (!params.accession) {params.accession = 'M21012' 
